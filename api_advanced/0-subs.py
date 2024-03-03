@@ -1,32 +1,36 @@
 #!/usr/bin/python3
 """
-Returns the number of subscribers from a subreddit
+This module contains a function that queries the Reddit API and
+ returns the number of subscribers for a given subreddit.
 """
 import requests
 
 
 def number_of_subscribers(subreddit):
-    """ Set a custom header user-agent """
-    headers = {"User-Agent": "ALU-scripting API 0.1"}
-    url = "https://www.reddit.com/r/{}.json".format(subreddit)
+    """
+    Queries the Reddit API for the number of subscribers for a given subreddit.
 
-    try:
-        response = requests.get(url, headers=headers,
-                                timeout=30, allow_redirects=False)
+    Args:
+        subreddit (str): The subreddit to query.
 
-    except requests.exceptions.Timeout:
-        return "The request Timed out"
+    Returns:
+        int: The number of subscribers for the subreddit,
+    or 0 if the subreddit is invalid.
+    """
+    url = "https://www.reddit.com/r/{}/about.json".format(subreddit)
+    headers = {'User-Agent': 'python3:0-subs:v1.0 (by /u/yourusername)'}
 
+    response = requests.get(url, headers=headers, allow_redirects=False)
     if response.status_code == 200:
-        json_data = response.json()
-        subscriber_number = (
-            json_data.get("data")
-            .get("children")[0]
-            .get("data")
-            .get("subreddit_subscribers")
-        )
-        return subscriber_number
-    elif response.status_code == 404:
-        return 0
+        return response.json().get('data', {}).get('subscribers', 0)
     else:
         return 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Please pass an argument for the subreddit to search.")
+    else:
+        print("{:d}".format(number_of_subscribers(sys.argv[1])))
